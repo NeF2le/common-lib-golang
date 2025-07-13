@@ -1,4 +1,4 @@
-module github.com/NeF2le/common
+module github.com/NeF2le/common-lib-golang
 
 go 1.23
 
