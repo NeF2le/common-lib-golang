@@ -1,12 +1,11 @@
 package logger
 
-import (
-	"go.uber.org/zap"
-)
-
-func NewLogger() *zap.SugaredLogger {
-	logger, _ := zap.NewDevelopment()
-	sugar := logger.Sugar()
-
-	return sugar
+type Logger interface {
+	Info(msg string, fields Fields)
+	Debug(msg string, fields Fields)
+	Fatal(msg string, fields Fields)
+	Warn(msg string, fields Fields)
+	Error(msg string, fields Fields)
 }
+
+type Fields map[string]interface{}
