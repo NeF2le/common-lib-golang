@@ -1,54 +1,48 @@
 package middleware
 
 import (
+	"fmt"
+	"github.com/NeF2le/common-lib-golang/logger"
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"net/http"
 	"time"
 )
 
 type LogFormatterParams struct {
-	Request      *http.Request
-	TimeStamp    time.Time
-	Latency      time.Duration
-	StatusCode   int
-	Method       string
-	Path         string
-	ErrorMessage string
-	Keys         map[string]any
-	RequestID    string
+	RequestID   string
+	HandlerName string
+	StatusCode  int
+	TimeStamp   time.Time
+	Latency     time.Duration
+	Keys        map[string]any
 }
 
-func LoggingMiddleware(logger *zap.SugaredLogger) gin.HandlerFunc {
+func LoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
 		c.Next()
 
 		params := &LogFormatterParams{
-			Request: c.Request,
-			Keys:    c.Keys,
+			RequestID:   c.Request.Header.Get("X-Request-Id"),
+			StatusCode:  c.Writer.Status(),
+			HandlerName: c.HandlerName(),
+			Latency:     time.Since(start),
+			TimeStamp:   time.Now(),
+			Keys:        c.Keys,
 		}
 
-		params.TimeStamp = time.Now()
-		params.Latency = params.TimeStamp.Sub(start)
-
-		params.Method = params.Request.Method
-		params.StatusCode = c.Writer.Status()
-		params.ErrorMessage = c.Errors.String()
-
-		params.Path = params.Request.URL.Path
-		if params.Request.URL.RawQuery != "" {
-			params.Path += "?" + params.Request.URL.RawQuery
+		requestPath := c.Request.URL.Path
+		if c.Request.URL.RawQuery != "" {
+			requestPath += "?" + c.Request.URL.RawQuery
 		}
+		logMsg := fmt.Sprintf("%s %s", c.Request.Method, requestPath)
+		logFields := structs.Map(params)
 
-		logger.Infow(
-			"method", params.Method,
-			"path", params.Path,
-			"statusCode", params.StatusCode,
-			"latency", params.Latency,
-			"errorMessage", params.ErrorMessage,
-			"params", params.Keys,
-		)
+		if params.StatusCode >= 400 {
+			logger_.Error(logMsg, logFields)
+		} else {
+			logger_.Info(logMsg, logFields)
+		}
 	}
 }
