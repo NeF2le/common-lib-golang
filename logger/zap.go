@@ -17,7 +17,7 @@ type ZapLogger struct {
 	z *zap.SugaredLogger
 }
 
-func NewZapLogger(z *zap.Logger) Logger {
+func NewZapLogger() Logger {
 	cfg := zap.NewDevelopmentConfig()
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	base, _ := cfg.Build(
