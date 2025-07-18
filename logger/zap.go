@@ -1,6 +1,9 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
 
 func flatten(fields map[string]interface{}) []interface{} {
 	result := make([]interface{}, 0, len(fields)*2)
@@ -15,7 +18,13 @@ type ZapLogger struct {
 }
 
 func NewZapLogger(z *zap.Logger) Logger {
-	return &ZapLogger{z: z.Sugar()}
+	cfg := zap.NewProductionConfig()
+	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	base, _ := cfg.Build(
+		zap.AddCaller(),
+		zap.AddCallerSkip(1),
+	)
+	return &ZapLogger{z: base.Sugar()}
 }
 
 func (l *ZapLogger) Info(msg string, fields Fields) {
