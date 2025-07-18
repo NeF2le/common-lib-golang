@@ -19,21 +19,26 @@ func NewZapLogger(z *zap.Logger) Logger {
 }
 
 func (l *ZapLogger) Info(msg string, fields Fields) {
-	l.z.Infow(msg, flatten(fields))
+	kv := flatten(fields)
+	l.z.Infow(msg, kv...)
 }
 
 func (l *ZapLogger) Debug(msg string, fields Fields) {
-	l.z.Debugw(msg, flatten(fields))
+	kv := flatten(fields)
+	l.z.Debugw(msg, kv...)
 }
 
 func (l *ZapLogger) Error(msg string, fields Fields) {
-	l.z.Errorw(msg, flatten(fields))
+	kv := flatten(fields)
+	l.z.Errorw(msg, kv...)
 }
 
 func (l *ZapLogger) Warn(msg string, fields Fields) {
-	l.z.Warnw(msg, flatten(fields))
+	kv := flatten(fields)
+	l.z.Warnw(msg, kv...)
 }
 
 func (l *ZapLogger) Fatal(msg string, fields Fields) {
-	l.z.Fatalw(msg, flatten(fields))
+	kv := flatten(fields)
+	l.z.Fatalw(msg, kv...)
 }
