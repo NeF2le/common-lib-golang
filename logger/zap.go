@@ -18,7 +18,7 @@ type ZapLogger struct {
 }
 
 func NewZapLogger(z *zap.Logger) Logger {
-	cfg := zap.NewProductionConfig()
+	cfg := zap.NewDevelopmentConfig()
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	base, _ := cfg.Build(
 		zap.AddCaller(),
