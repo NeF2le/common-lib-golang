@@ -19,10 +19,14 @@ type ZapLogger struct {
 
 func NewZapLogger() Logger {
 	cfg := zap.NewDevelopmentConfig()
+
+	cfg.Encoding = "console"
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
 	base, _ := cfg.Build(
 		zap.AddCaller(),
-		zap.AddCallerSkip(1),
+		zap.AddCallerSkip(2),
 	)
 	return &ZapLogger{z: base.Sugar()}
 }

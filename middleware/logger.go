@@ -14,7 +14,6 @@ type LogFormatterParams struct {
 	StatusCode  int
 	TimeStamp   time.Time
 	Latency     time.Duration
-	Keys        map[string]any
 }
 
 func LoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
@@ -29,7 +28,6 @@ func LoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 			HandlerName: c.HandlerName(),
 			Latency:     time.Since(start),
 			TimeStamp:   time.Now(),
-			Keys:        c.Keys,
 		}
 
 		requestPath := c.Request.URL.Path
