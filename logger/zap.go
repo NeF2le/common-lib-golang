@@ -17,7 +17,7 @@ type ZapLogger struct {
 	z *zap.SugaredLogger
 }
 
-func NewZapLogger(withCaller bool) Logger {
+func NewZapLogger(disableCaller bool) Logger {
 	cfg := zap.NewDevelopmentConfig()
 
 	cfg.Encoding = "console"
@@ -25,13 +25,13 @@ func NewZapLogger(withCaller bool) Logger {
 	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
 	var options []zap.Option
-	if withCaller {
+	if disableCaller {
+		cfg.DisableCaller = true
+	} else {
 		options = append(options,
 			zap.AddCaller(),
 			zap.AddCallerSkip(1),
 		)
-	} else {
-		cfg.DisableCaller = true
 	}
 
 	base, _ := cfg.Build(options...)
