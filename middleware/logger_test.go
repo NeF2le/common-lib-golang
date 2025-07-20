@@ -10,7 +10,7 @@ import (
 )
 
 func TestGinLoggingMiddleware(t *testing.T) {
-	logger_ := logger.NewZapLogger(true)
+	logger_ := logger.NewZapLogger(false)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()

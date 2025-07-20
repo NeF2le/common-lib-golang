@@ -30,6 +30,8 @@ func NewZapLogger(withCaller bool) Logger {
 			zap.AddCaller(),
 			zap.AddCallerSkip(1),
 		)
+	} else {
+		cfg.DisableCaller = true
 	}
 
 	base, _ := cfg.Build(options...)
