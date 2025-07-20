@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/NeF2le/common-lib-golang/logger"
 	"github.com/fatih/structs"
@@ -8,19 +9,30 @@ import (
 	"time"
 )
 
+type responseBodyWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (r *responseBodyWriter) Write(data []byte) (int, error) {
+	r.body.Write(data)
+	return r.ResponseWriter.Write(data)
+}
+
 type LogFormatterParams struct {
 	RequestID   string
 	HandlerName string
 	StatusCode  int
 	TimeStamp   time.Time
 	Latency     time.Duration
+	Body        string
 	method      string
 	path        string
 	host        string
 }
 
 func logRequest(params *LogFormatterParams, logger_ logger.Logger) {
-	logMsg := fmt.Sprintf("%s %s", params.method, params.path)
+	logMsg := fmt.Sprintf("HTTP request %s %s on %s", params.method, params.path, params.host)
 	logFields := structs.Map(params)
 
 	if params.StatusCode >= 400 {
@@ -34,6 +46,10 @@ func GinLoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
+		bodyBuf := &bytes.Buffer{}
+		writer := &responseBodyWriter{c.Writer, bodyBuf}
+		c.Writer = writer
+
 		c.Next()
 
 		params := &LogFormatterParams{
@@ -42,6 +58,7 @@ func GinLoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 			HandlerName: c.HandlerName(),
 			Latency:     time.Since(start),
 			TimeStamp:   time.Now(),
+			Body:        bodyBuf.String(),
 			method:      c.Request.Method,
 			path:        c.FullPath(),
 			host:        c.Request.Host,
