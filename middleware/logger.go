@@ -14,9 +14,23 @@ type LogFormatterParams struct {
 	StatusCode  int
 	TimeStamp   time.Time
 	Latency     time.Duration
+	method      string
+	path        string
+	host        string
 }
 
-func LoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
+func logRequest(params *LogFormatterParams, logger_ logger.Logger) {
+	logMsg := fmt.Sprintf("%s %s", params.method, params.path)
+	logFields := structs.Map(params)
+
+	if params.StatusCode >= 400 {
+		logger_.Error(logMsg, logFields)
+	} else {
+		logger_.Info(logMsg, logFields)
+	}
+}
+
+func GinLoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -28,19 +42,15 @@ func LoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 			HandlerName: c.HandlerName(),
 			Latency:     time.Since(start),
 			TimeStamp:   time.Now(),
+			method:      c.Request.Method,
+			path:        c.FullPath(),
+			host:        c.Request.Host,
 		}
 
-		requestPath := c.Request.URL.Path
 		if c.Request.URL.RawQuery != "" {
-			requestPath += "?" + c.Request.URL.RawQuery
+			params.path += "?" + c.Request.URL.RawQuery
 		}
-		logMsg := fmt.Sprintf("%s %s", c.Request.Method, requestPath)
-		logFields := structs.Map(params)
 
-		if params.StatusCode >= 400 {
-			logger_.Error(logMsg, logFields)
-		} else {
-			logger_.Info(logMsg, logFields)
-		}
+		logRequest(params, logger_)
 	}
 }

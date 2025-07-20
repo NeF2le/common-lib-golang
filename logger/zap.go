@@ -17,17 +17,23 @@ type ZapLogger struct {
 	z *zap.SugaredLogger
 }
 
-func NewZapLogger() Logger {
+func NewZapLogger(withCaller bool) Logger {
 	cfg := zap.NewDevelopmentConfig()
 
 	cfg.Encoding = "console"
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
-	base, _ := cfg.Build(
-		zap.AddCaller(),
-		zap.AddCallerSkip(2),
-	)
+	var options []zap.Option
+	if withCaller {
+		options = append(options,
+			zap.AddCaller(),
+			zap.AddCallerSkip(1),
+		)
+	}
+
+	base, _ := cfg.Build(options...)
+
 	return &ZapLogger{z: base.Sugar()}
 }
 
