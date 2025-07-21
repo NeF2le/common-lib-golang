@@ -6,6 +6,7 @@ import (
 	"github.com/NeF2le/common-lib-golang/logger"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
+	"strings"
 	"time"
 )
 
@@ -51,6 +52,24 @@ func GinLoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 		c.Writer = writer
 
 		c.Next()
+
+		skipPaths := []string{
+			"/metrics",
+			"/health",
+			"/healthz",
+			"/healthcheck",
+			"/ping",
+		}
+		skippedPath := false
+		for _, path := range skipPaths {
+			if strings.HasPrefix(c.Request.URL.Path, path) {
+				skippedPath = true
+				break
+			}
+		}
+		if skippedPath {
+			return
+		}
 
 		params := &LogFormatterParams{
 			RequestID:   c.Request.Header.Get("X-Request-Id"),
