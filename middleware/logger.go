@@ -62,7 +62,7 @@ func GinLoggingMiddleware(logger_ logger.Logger) gin.HandlerFunc {
 		}
 		skippedPath := false
 		for _, path := range skipPaths {
-			if strings.HasPrefix(c.Request.URL.Path, path) {
+			if strings.HasSuffix(c.Request.URL.Path, path) {
 				skippedPath = true
 				break
 			}
